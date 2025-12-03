@@ -1,0 +1,178 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  username      String
+  passwordHash  String
+  referralCode  String   @unique
+  sponsorId     String?  
+  sponsor       User?    @relation("UserSponsors", fields: [sponsorId], references: [id])
+  referrals     User[]   @relation("UserSponsors")
+  role          String   @default("USER")
+  // Profile fields
+  name          String?
+  phone         String?
+  country       String?
+  profileImageUrl String?
+
+  // Account metadata
+  status        String   @default("Active")
+  created_at    DateTime @default(now())
+  lastLogin     DateTime?
+  currentPackage String?
+  activationDate DateTime?
+  updatedAt     DateTime @updatedAt
+
+  // Wallet addresses
+  withdraw_wallet_bep20 String?
+  deposit_wallet_trc20  String?
+  deposit_wallet_bep20  String?
+
+  wallets       Wallet[]
+  packages      PackageActivation[]
+  points        PointsLedger[]
+  bonuses       BonusLedger[]
+  rebates       RebateLedger[]
+  rois          ROILedger[]
+  awards        AwardLedger[]
+  withdrawals   Withdrawal[]
+  deposits      Deposit[]
+  tickets       SupportTicket[]
+  depositAddresses UserDepositAddress[]
+}
+
+// Note: SQLite connector lacks enum support; using string role
+
+model PackageActivation {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id])
+  packageName  String
+  amount       Float
+  activatedAt  DateTime @default(now())
+  cycleCap     Float // 300% of amount
+  cycleStatus  String   @default("Active")
+}
+
+model Wallet {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  balance   Float @default(0)
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId])
+}
+
+model ROILedger {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id])
+  packageId     String?
+  amount        Float
+  timestamp     DateTime @default(now())
+  txId          String   @unique
+}
+
+model BonusLedger {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id])
+  sourceUserId  String
+  level         Int
+  type          String   // DIRECT or INDIRECT
+  amount        Float
+  timestamp     DateTime @default(now())
+  txId          String   @unique
+}
+
+model PointsLedger {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id])
+  sourceUserId  String
+  level         Int
+  points        Float
+  timestamp     DateTime @default(now())
+  txId          String   @unique
+}
+
+model RebateLedger {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id])
+  sourceUserId  String
+  level         Int
+  pointsUsed    Float
+  amount        Float
+  timestamp     DateTime @default(now())
+  txId          String   @unique
+}
+
+model AwardLedger {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id])
+  awardName    String
+  packageName  String
+  packageAmount Float
+  timestamp    DateTime @default(now())
+  txId         String   @unique
+}
+
+model Deposit {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  amount    Float
+  fee       Float    @default(0)
+  network   String   // SYSTEM, TRC20 or BEP20
+  txId      String   @unique
+  timestamp DateTime @default(now())
+  status    String   @default("Pending")
+}
+
+model Withdrawal {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  amount    Float
+  fee       Float
+  network   String   // BEP20 only
+  source    String   @default("REBATE") // REBATE | REFERRAL | AWARDS
+  txId      String   @unique
+  timestamp DateTime @default(now())
+  status    String   @default("Pending")
+}
+
+model SupportTicket {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  category  String   // DEPOSIT or GENERAL
+  subject   String
+  message   String
+  status    String   @default("OPEN") // OPEN or CLOSED
+  adminReply String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model UserDepositAddress {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  network   String   // TRC20 or BEP20
+  address   String   @unique
+  createdAt DateTime @default(now())
+
+  @@unique([userId, network])
+}
