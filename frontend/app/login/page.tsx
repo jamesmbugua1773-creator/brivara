@@ -49,9 +49,9 @@ export default function LoginPage() {
         <input type="text" style={{display: 'none'}} />
         <input type="password" style={{display: 'none'}} />
         <label className="text-xs text-gray-400">Email</label>
-        <input name="fakeemail" autoComplete="off" value={email} onChange={e=>setEmail(e.target.value)} className="w-full px-3 py-2 rounded bg-slate-800 border border-slate-700 mb-3" />
+        <input name="fakeemail" autoComplete="new-password" value={email} onChange={e=>setEmail(e.target.value)} className="w-full px-3 py-2 rounded bg-slate-800 border border-slate-700 mb-3" />
         <label className="text-xs text-gray-400">Password</label>
-        <input name="fakepassword" type="password" autoComplete="off" value={password} onChange={e=>setPassword(e.target.value)} className="w-full px-3 py-2 rounded bg-slate-800 border border-slate-700 mb-4" />
+        <input name="fakepassword" type="password" autoComplete="new-password" value={password} onChange={e=>setPassword(e.target.value)} className="w-full px-3 py-2 rounded bg-slate-800 border border-slate-700 mb-4" />
         <div className="text-xs mb-4 text-right">
           <a href="/forgot-password" className="text-turquoise hover:underline">Forgot password?</a>
         </div>
