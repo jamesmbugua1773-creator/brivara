@@ -45,6 +45,9 @@ export default function LoginPage() {
       <form autoComplete="off" className="w-full max-w-md p-6 rounded-2xl bg-slate-900 border border-turquoise/30">
         <h1 className="text-2xl font-bold text-turquoise mb-4">Login</h1>
         {err && <p className="text-red-400 text-sm mb-2">{err}</p>}
+        {/* Hidden inputs to prevent browser autofill */}
+        <input type="text" style={{display: 'none'}} />
+        <input type="password" style={{display: 'none'}} />
         <label className="text-xs text-gray-400">Email</label>
         <input autoComplete="off" value={email} onChange={e=>setEmail(e.target.value)} className="w-full px-3 py-2 rounded bg-slate-800 border border-slate-700 mb-3" />
         <label className="text-xs text-gray-400">Password</label>
