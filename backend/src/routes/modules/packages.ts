@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { authMiddleware } from '../../utils/authMiddleware.js';
 import { activatePackage } from '../../engines/activation.js';
+import { prisma } from '../../services/db.js';
 const PACKAGE_MAP: Record<string, number> = {
   P1: 25, P2: 50, P3: 100, P4: 250, P5: 500, P6: 1000, P7: 2000, P8: 3000, P9: 5000,
 };

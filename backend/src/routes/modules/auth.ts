@@ -6,15 +6,13 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import nodemailer from 'nodemailer';
 
-import nodemailer from 'nodemailer';
-
 const router = Router();
 
 // Create email transporter
 const createTransporter = () => {
   if (process.env.NODE_ENV === 'production') {
     // Use production SMTP settings
-    return nodemailer.createTransporter({
+    return nodemailer.createTransport({
       host: process.env.SMTP_HOST,
       port: parseInt(process.env.SMTP_PORT || '587'),
       secure: process.env.SMTP_SECURE === 'true',
@@ -25,7 +23,7 @@ const createTransporter = () => {
     });
   } else {
     // For dev, use Ethereal or console log
-    return nodemailer.createTransporter({
+    return nodemailer.createTransport({
       host: 'smtp.ethereal.email',
       port: 587,
       auth: {
@@ -134,9 +132,9 @@ router.post('/login', async (req, res) => {
   const user = await prisma.user.findFirst({
     where: {
       OR: [
-        email ? { email } : undefined,
-        username ? { username } : undefined,
-      ].filter(Boolean)
+        ...(email ? [{ email }] : []),
+        ...(username ? [{ username }] : []),
+      ]
     }
   });
   if (!user) return res.status(401).json({ error: 'Invalid credentials' });

@@ -83,10 +83,10 @@ router.get('/', authMiddleware, async (req, res) => {
     console.error('PROFILE ERROR:', e);
   }
   // Patch: If user exists but all fields except id are null, fetch role from DB
-  if (user && user.id && (!user.role || Object.values(user).filter((v, k) => k !== 'id' && k !== 'role').every(v => v === null))) {
-    const dbUser = await prisma.user.findUnique({ where: { id: userId }, select: { role: true } });
-    user.role = dbUser?.role || 'USER';
-  }
+  // if (user && user.id && (!user.role || Object.values(user).filter((v, k) => k !== 'id' && k !== 'role').every((v: any) => v == null))) {
+  //   const dbUser = await prisma.user.findUnique({ where: { id: userId }, select: { role: true } });
+  //   user.role = dbUser?.role || 'USER';
+  // }
     // Always return role, even if user is missing or fields are null
     if (!user) {
       const dbUser = await prisma.user.findUnique({ where: { id: userId }, select: { role: true } });
