@@ -80,9 +80,11 @@ export default function BrivaraCapital() {
       try {
         setLoading(true);
         if (!jwt) {
+          console.log('No JWT token found, user not authenticated');
           setLoading(false);
           return;
         }
+        console.log('Fetching dashboard data with JWT:', jwt.substring(0, 20) + '...');
         const headers = { Authorization: `Bearer ${jwt}` } as const;
         const [summaryRes, progressRes, rebateSummaryRes, roiHistoryRes, referralRes] = await Promise.all([
           fetch(`${apiBase}/dashboard/summary`, { headers }),
@@ -112,9 +114,13 @@ export default function BrivaraCapital() {
           roiHistory = await roiHistoryRes.json();
         }
         if (referralRes.ok) {
-          setReferralLink(await referralRes.json());
+          const data = await referralRes.json();
+          console.log('Referral link loaded:', data);
+          setReferralLink(data);
         } else {
           console.error('Failed to fetch referral link:', referralRes.status, referralRes.statusText);
+          const errorText = await referralRes.text();
+          console.error('Error response:', errorText);
         }
 
         // Compute today's ROI and last 7 days series
