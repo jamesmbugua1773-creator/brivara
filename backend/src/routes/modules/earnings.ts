@@ -71,9 +71,10 @@ router.get('/rebates/summary', authMiddleware, async (req, res) => {
   const earned = Number(earnedAgg._sum.amount ?? 0);
   const totalPoints = Number(pointsAgg._sum.points ?? 0);
   const pointsUsed = Number(usedAgg._sum.pointsUsed ?? 0);
-  // Business rule alignment: progress is based on total points accrued
-  const remainingPoints = totalPoints % 500; // points carried over toward next rebate
-  const untilNext = totalPoints > 0 ? (500 - remainingPoints) % 500 : 500;
+  // Business rule alignment: progress is based on available (unconsumed) points
+  const availablePoints = Math.max(0, totalPoints - pointsUsed);
+  const remainingPoints = availablePoints % 500; // points carried over toward next rebate from available points
+  const untilNext = availablePoints > 0 ? (500 - remainingPoints) % 500 : 500;
   const POINT_USD = Number(process.env.POINT_USD_VALUE ?? '0.08'); // default $0.08 per point
   const USD_PER_500 = Number(process.env.REBATE_USD_PER_500 ?? '40'); // default $40 per 500 points
   const impliedAmount = totalPoints * POINT_USD;

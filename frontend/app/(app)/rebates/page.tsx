@@ -97,9 +97,15 @@ export default function RebatesPage() {
       <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-4">
         <div className="flex items-center justify-between text-sm">
           <div className="text-gray-400">Progress to next rebate (500 pts)</div>
-          <div className="text-gray-300">{num(500 - untilNext)} / 500 pts</div>
+          <div className="text-gray-300">{num(remainingPoints)} / 500 pts</div>
         </div>
         <div className="mt-2 text-xs text-gray-400">{num(untilNext)} pts until your next $40 rebate.</div>
+        <div className="mt-2 bg-slate-800 rounded-full h-2">
+          <div 
+            className="bg-turquoise h-2 rounded-full transition-all duration-300" 
+            style={{ width: `${Math.min(100, (remainingPoints / 500) * 100)}%` }}
+          ></div>
+        </div>
       </div>
 
       {/* History removed per request to keep page minimal */}
