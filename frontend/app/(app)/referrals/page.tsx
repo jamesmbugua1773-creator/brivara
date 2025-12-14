@@ -2,11 +2,9 @@
 import React, { useEffect, useState } from "react";
 
 type TreeLevel = { level: number; users: { id: string; username: string; package?: { packageName: string; amount: number } | null }[] };
-type UplineLevel = { level: number; user: { id: string; username: string } };
 
 export default function ReferralsPage() {
   const [tree, setTree] = useState<TreeLevel[]>([]);
-  const [upline, setUpline] = useState<UplineLevel[]>([]);
   const [refLink, setRefLink] = useState<{ code: string; url: string } | null>(null);
   const [analytics, setAnalytics] = useState<{
     totals: { totalDirectPoints: number; totalIndirectPoints: number; totalDirectBonus: number; totalIndirectBonus: number; totalReferralBonus: number };
@@ -22,18 +20,14 @@ export default function ReferralsPage() {
     setLoading(true);
     Promise.all([
       fetch(`${base}/referrals/tree`, { headers: { Authorization: `Bearer ${token}` } }),
-      fetch(`${base}/referrals/levels`, { headers: { Authorization: `Bearer ${token}` } }),
       fetch(`${base}/referrals/analytics`, { headers: { Authorization: `Bearer ${token}` } }),
     ])
-      .then(async ([treeRes, levelsRes, analyticsRes]) => {
+      .then(async ([treeRes, analyticsRes]) => {
         if (!treeRes.ok) throw new Error(`Tree HTTP ${treeRes.status}`);
-        if (!levelsRes.ok) throw new Error(`Levels HTTP ${levelsRes.status}`);
         if (!analyticsRes.ok) throw new Error(`Analytics HTTP ${analyticsRes.status}`);
         const treeJson = await treeRes.json();
-        const levelsJson = await levelsRes.json();
         const analyticsJson = await analyticsRes.json();
         setTree((treeJson?.levels ?? []) as TreeLevel[]);
-        setUpline((levelsJson?.levels ?? []) as UplineLevel[]);
         setAnalytics(analyticsJson);
         // Fetch referral link non-blocking; ignore errors
         try {
@@ -66,22 +60,6 @@ export default function ReferralsPage() {
           <div className="text-xs text-gray-500 mt-1">Code: {refLink.code}</div>
         </div>
       )}
-
-      <section>
-        <h2 className="text-xl font-medium mb-3">Your Upline</h2>
-        {upline.length === 0 ? (
-          <div className="text-sm text-gray-400">No upline recorded.</div>
-        ) : (
-          <div className="space-y-2">
-            {upline.map((lvl) => (
-              <div key={lvl.level} className="flex items-center justify-between border rounded-md p-3">
-                <div className="text-sm">Level {lvl.level}</div>
-                <div className="text-sm font-medium">{lvl.user.username}</div>
-              </div>
-            ))}
-          </div>
-        )}
-      </section>
 
       <section>
         <h2 className="text-xl font-medium mb-3">Your Downline</h2>
