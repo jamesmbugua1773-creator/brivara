@@ -1,5 +1,5 @@
 export const metadata = {
-  title: 'Brivara Capital Platform',
+  title: 'Brivara Capital',
   description: 'Dashboard UI',
   viewport: 'width=device-width, initial-scale=1',
 };

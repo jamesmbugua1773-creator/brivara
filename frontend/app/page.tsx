@@ -303,7 +303,7 @@ export default function BrivaraCapital() {
         className="text-center mb-8"
       >
         <h1 className="text-4xl md:text-5xl font-bold text-white mb-2">
-          BRIVARA CAPITAL PLATFORM
+          BRIVARA CAPITAL
         </h1>
         <p className="text-turquoise text-lg font-semibold">
           Updated With Rebate Bonus on Dashboard

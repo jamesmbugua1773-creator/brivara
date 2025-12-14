@@ -35,7 +35,7 @@ export function DashboardView({ data, loading, apiError }: { data: any; loading:
         animate={{ opacity: 1, y: 0 }}
         className="text-center mb-8"
       >
-        <h1 className="text-4xl md:text-5xl font-bold text-white mb-2">BRIVARA CAPITAL PLATFORM</h1>
+        <h1 className="text-4xl md:text-5xl font-bold text-white mb-2">BRIVARA CAPITAL</h1>
         <p className="text-turquoise text-lg font-semibold">Dashboard Overview</p>
       </motion.div>
 
