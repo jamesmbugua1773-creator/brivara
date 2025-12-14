@@ -113,6 +113,8 @@ export default function BrivaraCapital() {
         }
         if (referralRes.ok) {
           setReferralLink(await referralRes.json());
+        } else {
+          console.error('Failed to fetch referral link:', referralRes.status, referralRes.statusText);
         }
 
         // Compute today's ROI and last 7 days series
@@ -1431,9 +1433,9 @@ function ProfileView({ jwt, apiBase }: { jwt: string; apiBase: string }) {
   return (
     <div className="max-w-3xl mx-auto text-left space-y-8">
       {/* Referral Link */}
-      {referralLink && (
-        <div className="border rounded-md p-3 bg-slate-900/60">
-          <div className="text-sm text-gray-400">Your Referral Link</div>
+      <div className="border rounded-md p-3 bg-slate-900/60">
+        <div className="text-sm text-gray-400">Your Referral Link</div>
+        {referralLink ? (
           <div className="mt-1 flex items-center gap-2">
             <input readOnly value={referralLink.url} className="flex-1 bg-transparent border border-slate-800 rounded px-2 py-1 text-sm" />
             <button
@@ -1442,9 +1444,11 @@ function ProfileView({ jwt, apiBase }: { jwt: string; apiBase: string }) {
             >Copy</button>
             {copied && <span className="text-green-400 text-sm">Copied!</span>}
           </div>
-          <div className="text-xs text-gray-500 mt-1">Code: {referralLink.code}</div>
-        </div>
-      )}
+        ) : (
+          <div className="mt-1 text-sm text-gray-500">Loading referral link...</div>
+        )}
+        {referralLink && <div className="text-xs text-gray-500 mt-1">Code: {referralLink.code}</div>}
+      </div>
 
       {/* User Info */}
       <div className="p-4 rounded-xl border border-slate-700 bg-slate-900/50 space-y-3">
