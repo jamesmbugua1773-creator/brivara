@@ -22,6 +22,8 @@ export default function DashboardPage() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [apiError, setApiError] = useState<string | null>(null);
+  const [referralLink, setReferralLink] = useState<{ code: string; url: string } | null>(null);
+  const [copied, setCopied] = useState(false);
   const apiBase = typeof window !== 'undefined'
     ? (process.env.NEXT_PUBLIC_API_BASE || `http://${window.location.hostname}:4000/api`)
     : '';
@@ -33,11 +35,12 @@ export default function DashboardPage() {
         setLoading(true);
         if (!jwt) { setLoading(false); return; }
         const headers = { Authorization: `Bearer ${jwt}` } as const;
-        const [summaryRes, progressRes, rebateSummaryRes, roiHistoryRes] = await Promise.all([
+        const [summaryRes, progressRes, rebateSummaryRes, roiHistoryRes, referralRes] = await Promise.all([
           fetch(`${apiBase}/dashboard/summary`, { headers }),
           fetch(`${apiBase}/progress/300`, { headers }),
           fetch(`${apiBase}/earnings/rebates/summary`, { headers }),
           fetch(`${apiBase}/earnings/roi/history`, { headers }),
+          fetch(`${apiBase}/referrals/link`, { headers }),
         ]);
         if (!summaryRes.ok) {
           const sBody = await summaryRes.text();
@@ -77,6 +80,15 @@ export default function DashboardPage() {
           roi7d = series;
           // roiRecentVar will be attached to mapped below
         }
+        if (referralRes.ok) {
+          const referralData = await referralRes.json();
+          console.log('Dashboard referral link loaded:', referralData);
+          setReferralLink(referralData);
+        } else {
+          console.error('Failed to fetch dashboard referral link:', referralRes.status, referralRes.statusText);
+          const errorText = await referralRes.text();
+          console.error('Referral link error response:', errorText);
+        }
         const POINT_USD = Number(process.env.NEXT_PUBLIC_POINT_USD_VALUE ?? '0.08');
         const impliedRebate = Number(rebateSummary?.impliedAmount ?? (Number(summary.totalPoints ?? 0) * POINT_USD));
         const mapped: DashboardData = {
@@ -109,5 +121,5 @@ export default function DashboardPage() {
     fetchData();
   }, [apiBase]);
 
-  return <DashboardView data={data} loading={loading} apiError={apiError} />;
+  return <DashboardView data={data} loading={loading} apiError={apiError} referralLink={referralLink} onCopy={() => { navigator.clipboard.writeText(referralLink?.url || ''); setCopied(true); setTimeout(() => setCopied(false), 800); }} copied={copied} />;
 }
