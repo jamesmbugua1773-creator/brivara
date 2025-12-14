@@ -10,11 +10,15 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  const [welcomeMessage, setWelcomeMessage] = useState<string | null>(null);
+  const [showWelcome, setShowWelcome] = useState(false);
 
   const handleLogin = async () => {
     try {
         setLoading(true);
         setErr(null);
+        setWelcomeMessage(null);
+        setShowWelcome(false);
       const res = await fetch(`${apiBase}/auth/login`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
@@ -31,10 +35,27 @@ export default function LoginPage() {
             const prof = await profRes.json();
             if (prof?.role) {
               try { localStorage.setItem('brivara_role', prof.role); } catch {}
-              if (prof.role === 'ADMIN') { window.location.replace('/admin'); return; }
+              
+              // Create welcome message
+              const roleDisplay = prof.role === 'USER' ? 'Member' : prof.role.charAt(0).toUpperCase() + prof.role.slice(1).toLowerCase();
+              const username = prof.username || prof.name || prof.email?.split('@')[0] || 'User';
+              const message = `Welcome back ${roleDisplay} ${username}!`;
+              setWelcomeMessage(message);
+              setShowWelcome(true);
+              
+              // Redirect after showing welcome message
+              setTimeout(() => {
+                if (prof.role === 'ADMIN') { 
+                  window.location.replace('/admin'); 
+                } else { 
+                  window.location.replace('/dashboard'); 
+                }
+              }, 2000); // 2 second delay to show welcome message
+              return;
             }
           }
         } catch {}
+        // Fallback if profile fetch fails
         window.location.replace('/dashboard');
     } catch (e: any) { setErr(e.message); }
     finally { setLoading(false); }
@@ -45,6 +66,14 @@ export default function LoginPage() {
       <form autoComplete="off" className="w-full max-w-md p-6 rounded-2xl bg-slate-900 border border-turquoise/30">
         <h1 className="text-2xl font-bold text-turquoise mb-4">Login</h1>
         {err && <p className="text-red-400 text-sm mb-2">{err}</p>}
+        
+        {showWelcome && welcomeMessage && (
+          <div className="mb-4 p-4 rounded-lg bg-green-600/20 border border-green-600 text-green-300 text-center">
+            <p className="text-lg font-semibold">{welcomeMessage}</p>
+            <p className="text-sm mt-1">Redirecting you now...</p>
+          </div>
+        )}
+        
         {/* Hidden inputs to capture browser autofill */}
         <input type="text" autoComplete="username" style={{display: 'none'}} />
         <input type="password" autoComplete="current-password" style={{display: 'none'}} />
@@ -55,8 +84,8 @@ export default function LoginPage() {
         <div className="text-xs mb-4 text-right">
           <a href="/forgot-password" className="text-turquoise hover:underline">Forgot password?</a>
         </div>
-        <button onClick={handleLogin} disabled={loading} className="w-full px-4 py-2 rounded bg-turquoise text-black font-semibold">
-          {loading ? 'Logging in…' : 'Login'}
+        <button onClick={handleLogin} disabled={loading || showWelcome} className="w-full px-4 py-2 rounded bg-turquoise text-black font-semibold">
+          {loading ? 'Logging in…' : showWelcome ? 'Welcome!' : 'Login'}
         </button>
         <p className="text-xs text-gray-400 mt-3 text-center">Don't have an account? <a href="/register" className="text-turquoise">Register</a></p>
       </form>
