@@ -88,8 +88,8 @@ router.get('/progress', authMiddleware, async (req: Request, res: Response) => {
       Diamond: directRanks.has('Diamond'),
       Director: directRanks.has('Director'),
       Ambassador: directRanks.has('Ambassador'),
-      'Vice President': directRanks.has('Vice President'),
-      President: directRanks.has('President'),
+      'Vice President': directRanks.has('Ambassador'), // Vice President needs 1 direct Ambassador
+      President: directRanks.has('Vice President'), // President needs 1 direct Vice President
     },
     achieved,
   });

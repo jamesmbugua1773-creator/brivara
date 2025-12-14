@@ -122,12 +122,12 @@ function AwardCard({ rank, reward, direct, teamPoints, achieved, prog }: { rank:
     directProgress = has ? '1/1 Direct Director' : '0/1 Direct Director';
     directOk = has;
   } else if (rank === 'Vice President') {
-    const has = !!prog?.directHas?.['Vice President'];
-    directProgress = has ? '1/1 Direct Vice President' : '0/1 Direct Vice President';
+    const has = !!prog?.directHas?.Ambassador;
+    directProgress = has ? '1/1 Direct Ambassador' : '0/1 Direct Ambassador';
     directOk = has;
   } else if (rank === 'President') {
-    const has = !!prog?.directHas?.President;
-    directProgress = has ? '1/1 Direct President' : '0/1 Direct President';
+    const has = !!prog?.directHas?.['Vice President'];
+    directProgress = has ? '1/1 Direct Vice President' : '0/1 Direct Vice President';
     directOk = has;
   } else if (rank === 'Royal') {
     const has = !!prog?.directHas?.President; // closest proxy for pre-royal requirement
