@@ -67,10 +67,15 @@ router.get('/rebates/summary', authMiddleware, async (req, res) => {
   const earnedAgg = await prisma.rebateLedger.aggregate({ _sum: { amount: true }, where: { userId } });
   const pointsAgg = await prisma.pointsLedger.aggregate({ _sum: { points: true }, where: { userId } });
   const usedAgg = await prisma.rebateLedger.aggregate({ _sum: { pointsUsed: true }, where: { userId } });
+  const forfeitedAgg = await prisma.rebateLedger.aggregate({
+    _sum: { pointsUsed: true },
+    where: { userId, amount: 0 }
+  });
   const rebateCount = await prisma.rebateLedger.count({ where: { userId } });
   const earned = Number(earnedAgg._sum.amount ?? 0);
   const totalPoints = Number(pointsAgg._sum.points ?? 0);
   const pointsUsed = Number(usedAgg._sum.pointsUsed ?? 0);
+  const pointsForfeited = Number(forfeitedAgg._sum.pointsUsed ?? 0);
   // Business rule alignment: progress is based on available (unconsumed) points
   const availablePoints = Math.max(0, totalPoints - pointsUsed);
   const remainingPoints = availablePoints % 500; // points carried over toward next rebate from available points
@@ -91,6 +96,7 @@ router.get('/rebates/summary', authMiddleware, async (req, res) => {
     totalRebatesEarned: earned,
     totalPoints,
     pointsUsed,
+    pointsForfeited,
     remainingPoints,
     pointsUntilNextRebate: untilNext,
     rebateCount,

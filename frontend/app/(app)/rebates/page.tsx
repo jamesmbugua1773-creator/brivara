@@ -5,6 +5,7 @@ type RebateSummary = {
   totalRebatesEarned: number;
   totalPoints: number;
   pointsUsed: number;
+  pointsForfeited?: number;
   remainingPoints: number;
   pointsUntilNextRebate: number;
   impliedAmount?: number;
@@ -91,7 +92,7 @@ export default function RebatesPage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Stat label="Rebate Total" value={fmt(paid)} />
         <Stat label="Rebates from Referrals" value={fmt(paid)} />
-        <Stat label="Earnings Not Yet Mature" value={`${num(remainingPoints)} pts (${fmt((summary?.computedUnpaidByThreshold ?? (remainingPoints * 0.08)))})`} />
+        <Stat label="Points Forfeited (Daily Cap)" value={num(summary?.pointsForfeited ?? 0)} />
       </div>
 
       <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-4">

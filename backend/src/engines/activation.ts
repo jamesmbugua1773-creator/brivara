@@ -127,6 +127,24 @@ async function triggerRebates(tx: Prisma.TransactionClient, userId: string) {
     available -= 500;
     todayRebateTotal += 40;
   }
+
+  // Flash (forfeit) any remaining points that couldn't be converted due to daily cap
+  if (available > 0) {
+    // Create a rebate ledger entry to record the forfeited points
+    const txId = uuidv4();
+    await tx.rebateLedger.create({
+      data: {
+        userId,
+        sourceUserId: userId,
+        level: 0,
+        pointsUsed: available, // Record the forfeited points
+        amount: 0, // No earnings for forfeited points
+        txId
+      },
+    });
+    // Note: We don't increment balance for forfeited points
+    // The points are effectively "used up" but no earnings are generated
+  }
 }
 
 async function incrementBalance(tx: Prisma.TransactionClient, userId: string, amount: number) {
