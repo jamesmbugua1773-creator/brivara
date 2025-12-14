@@ -1430,6 +1430,22 @@ function ProfileView({ jwt, apiBase }: { jwt: string; apiBase: string }) {
 
   return (
     <div className="max-w-3xl mx-auto text-left space-y-8">
+      {/* Referral Link */}
+      {referralLink && (
+        <div className="border rounded-md p-3 bg-slate-900/60">
+          <div className="text-sm text-gray-400">Your Referral Link</div>
+          <div className="mt-1 flex items-center gap-2">
+            <input readOnly value={referralLink.url} className="flex-1 bg-transparent border border-slate-800 rounded px-2 py-1 text-sm" />
+            <button
+              onClick={() => { navigator.clipboard.writeText(referralLink.url); setCopied(true); setTimeout(() => setCopied(false), 800); }}
+              className="px-3 py-1 rounded bg-turquoise text-black text-sm font-semibold"
+            >Copy</button>
+            {copied && <span className="text-green-400 text-sm">Copied!</span>}
+          </div>
+          <div className="text-xs text-gray-500 mt-1">Code: {referralLink.code}</div>
+        </div>
+      )}
+
       {/* User Info */}
       <div className="p-4 rounded-xl border border-slate-700 bg-slate-900/50 space-y-3">
         <h3 className="font-semibold text-turquoise">User Information</h3>
