@@ -49,6 +49,8 @@ export default function BrivaraCapital() {
   const [apiError, setApiError] = useState<string | null>(null);
   const [jwt, setJwt] = useState<string | null>(loadToken());
   const [packages, setPackages] = useState<Array<{ code: string; amount: number }>>([]);
+  const [referralLink, setReferralLink] = useState<{ code: string; url: string } | null>(null);
+  const [copied, setCopied] = useState(false);
   const [depositOpen, setDepositOpen] = useState(false);
   const [depositPkg, setDepositPkg] = useState<{ code: string; amount: number } | null>(null);
   const [depositNetwork, setDepositNetwork] = useState<'TRC20'|'BEP20'>('TRC20');
@@ -82,11 +84,12 @@ export default function BrivaraCapital() {
           return;
         }
         const headers = { Authorization: `Bearer ${jwt}` } as const;
-        const [summaryRes, progressRes, rebateSummaryRes, roiHistoryRes] = await Promise.all([
+        const [summaryRes, progressRes, rebateSummaryRes, roiHistoryRes, referralRes] = await Promise.all([
           fetch(`${apiBase}/dashboard/summary`, { headers }),
           fetch(`${apiBase}/progress/300`, { headers }),
           fetch(`${apiBase}/earnings/rebates/summary`, { headers }),
           fetch(`${apiBase}/earnings/roi/history`, { headers }),
+          fetch(`${apiBase}/referrals/link`, { headers }),
         ]);
         if (!summaryRes.ok) {
           const sBody = await summaryRes.text();
@@ -107,6 +110,9 @@ export default function BrivaraCapital() {
         }
         if (roiHistoryRes.ok) {
           roiHistory = await roiHistoryRes.json();
+        }
+        if (referralRes.ok) {
+          setReferralLink(await referralRes.json());
         }
 
         // Compute today's ROI and last 7 days series
@@ -1421,7 +1427,6 @@ function ProfileView({ jwt, apiBase }: { jwt: string; apiBase: string }) {
 
   if (loading && !profile) return <p className="text-gray-400">Loading profile…</p>;
   if (err) return <p className="text-red-400">{err}</p>;
-  const referralLink = profile?.username ? `https://brivaracapital.com/register?ref=${profile.username}` : '';
 
   return (
     <div className="max-w-3xl mx-auto text-left space-y-8">
@@ -1497,12 +1502,16 @@ function ProfileView({ jwt, apiBase }: { jwt: string; apiBase: string }) {
       {/* Referral */}
       <div className="p-4 rounded-xl border border-slate-700 bg-slate-900/50 space-y-3">
         <h3 className="font-semibold text-turquoise">Referral</h3>
-        <div className="flex items-center gap-2">
-          <input value={referralLink} readOnly className="flex-1 px-3 py-2 rounded bg-slate-700 border border-slate-600" />
-          <button onClick={()=>{ navigator.clipboard.writeText(referralLink); setCopied(true); setTimeout(()=>setCopied(false), 800); }} className="px-3 py-2 rounded bg-turquoise text-black font-semibold">Copy</button>
-          {copied && <span className="text-green-400 text-sm">Copied!</span>}
-        </div>
-        <p className="text-xs text-gray-500">Referral Code: {profile?.username || '—'}</p>
+        {referralLink ? (
+          <div className="flex items-center gap-2">
+            <input value={referralLink.url} readOnly className="flex-1 px-3 py-2 rounded bg-slate-700 border border-slate-600" />
+            <button onClick={()=>{ navigator.clipboard.writeText(referralLink.url); setCopied(true); setTimeout(()=>setCopied(false), 800); }} className="px-3 py-2 rounded bg-turquoise text-black font-semibold">Copy</button>
+            {copied && <span className="text-green-400 text-sm">Copied!</span>}
+          </div>
+        ) : (
+          <div className="text-sm text-gray-400">Loading referral link...</div>
+        )}
+        <p className="text-xs text-gray-500">Referral Code: {referralLink?.code || '—'}</p>
       </div>
 
       {/* Account Data */}
