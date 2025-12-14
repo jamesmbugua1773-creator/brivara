@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
 
-type TreeLevel = { level: number; users: { id: string; username: string; package?: { packageName: string; amount: number } | null }[] };
+type TreeLevel = { level: number; users: { id: string; username: string; phone?: string; type: 'direct' | 'indirect'; package?: { packageName: string; amount: number } | null }[] };
 
 export default function ReferralsPage() {
   const [tree, setTree] = useState<TreeLevel[]>([]);
@@ -75,19 +75,30 @@ export default function ReferralsPage() {
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
                     {lvl.users.map((u) => (
-                      <div key={u.id} className="border rounded-md p-2 text-sm">
-                        <div className="font-medium">{u.username}</div>
-                        <div className="text-xs text-gray-600">Package: {u.package ? `${u.package.packageName} ($${Number(u.package.amount).toLocaleString()})` : '—'}</div>
+                      <div key={u.id} className="border rounded-md p-3 text-sm bg-slate-900/50">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="font-medium">{u.username}</div>
+                          <span className={`px-2 py-1 rounded text-xs font-semibold ${
+                            u.type === 'direct' 
+                              ? 'bg-green-600 text-white' 
+                              : 'bg-blue-600 text-white'
+                          }`}>
+                            {u.type === 'direct' ? 'Direct' : 'Indirect'}
+                          </span>
+                        </div>
+                        <div className="text-xs text-gray-400 space-y-1">
+                          <div>Phone: {u.phone || '—'}</div>
+                          <div>Package: {u.package ? `${u.package.packageName} ($${Number(u.package.amount).toLocaleString()})` : '—'}</div>
+                        </div>
                         {analytics && (
                           (() => {
                             const row = analytics.perReferral.find(r => r.sourceUserId === u.id);
                             return row ? (
-                              <div className="text-xs text-gray-600 mt-1">
+                              <div className="text-xs text-gray-500 mt-2 space-y-1">
                                 <div>Direct Points: {Math.round(row.directPoints).toLocaleString()}</div>
                                 <div>Indirect Points: {Math.round(row.indirectPoints).toLocaleString()}</div>
-                                <div className="mt-1">Direct Bonus: ${row.directBonus.toFixed(2)}</div>
+                                <div>Direct Bonus: ${row.directBonus.toFixed(2)}</div>
                                 <div>Indirect Bonus: ${row.indirectBonus.toFixed(2)}</div>
-                                <div className="mt-1">Invested: {row.package ? `${row.package.packageName} ($${Number(row.package.amount).toLocaleString()})` : '—'}</div>
                               </div>
                             ) : null;
                           })()

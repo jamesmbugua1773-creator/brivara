@@ -7,14 +7,22 @@ const router = Router();
 router.get('/tree', authMiddleware, async (req, res) => {
   const userId = (req as any).userId as string;
   // Build level-wise tree up to 10 levels
-  const levels: Array<{ level: number; users: Array<{ id: string; username: string }> }> = [];
+  const levels: Array<{ level: number; users: Array<{ id: string; username: string; phone?: string; type: 'direct' | 'indirect' }> }> = [];
   let currentLevel: string[] = [userId];
   for (let lvl = 1; lvl <= 10; lvl++) {
     const next: string[] = [];
-    const levelUsers: Array<{ id: string; username: string }> = [];
+    const levelUsers: Array<{ id: string; username: string; phone?: string; type: 'direct' | 'indirect' }> = [];
     for (const uid of currentLevel) {
-      const refs = await prisma.user.findMany({ where: { sponsorId: uid }, select: { id: true, username: true } });
-      levelUsers.push(...refs);
+      const refs = await prisma.user.findMany({ 
+        where: { sponsorId: uid }, 
+        select: { id: true, username: true, phone: true } 
+      });
+      levelUsers.push(...refs.map(r => ({ 
+        id: r.id, 
+        username: r.username, 
+        phone: r.phone || undefined,
+        type: lvl === 1 ? 'direct' : 'indirect' as 'direct' | 'indirect'
+      })));
       next.push(...refs.map(r => r.id));
     }
     levels.push({ level: lvl, users: levelUsers });
@@ -39,7 +47,13 @@ router.get('/tree', authMiddleware, async (req, res) => {
   }
   const enriched = levels.map(l => ({
     level: l.level,
-    users: l.users.map(u => ({ id: u.id, username: u.username, package: packageByUser.get(u.id) || null }))
+    users: l.users.map(u => ({ 
+      id: u.id, 
+      username: u.username, 
+      phone: u.phone,
+      type: u.type,
+      package: packageByUser.get(u.id) || null 
+    }))
   }));
 
   res.json({ levels: enriched });
