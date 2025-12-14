@@ -1,7 +1,11 @@
 export const metadata = {
   title: 'Brivara Capital',
   description: 'Dashboard UI',
-  viewport: 'width=device-width, initial-scale=1',
+};
+
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
 };
 
 import './globals.css';
