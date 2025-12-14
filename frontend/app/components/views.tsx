@@ -43,36 +43,6 @@ export function DashboardView({ data, loading, apiError, referralLink, onCopy, c
         <div className="mb-4 p-3 rounded border border-red-600 bg-red-900/20 text-red-300">{apiError}</div>
       )}
 
-      {/* Referral Link Section */}
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="mb-6 p-4 rounded-xl bg-slate-900/70 border border-slate-800"
-      >
-        <h2 className="text-lg font-semibold text-turquoise mb-3">Your Referral Link</h2>
-        {referralLink ? (
-          <div className="flex items-center gap-2">
-            <input 
-              value={referralLink.url} 
-              readOnly 
-              className="flex-1 px-3 py-2 rounded bg-slate-700 border border-slate-600 text-sm" 
-            />
-            <button 
-              onClick={onCopy}
-              className="px-4 py-2 rounded bg-turquoise text-black font-semibold text-sm hover:bg-turquoise/90 transition-colors"
-            >
-              Copy
-            </button>
-            {copied && <span className="text-green-400 text-sm">Copied!</span>}
-          </div>
-        ) : (
-          <div className="text-sm text-gray-400">Loading referral link...</div>
-        )}
-        {referralLink && (
-          <p className="text-xs text-gray-500 mt-2">Referral Code: {referralLink.code}</p>
-        )}
-      </motion.div>
-
       {/* KPI Strip */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <div className="p-4 rounded-xl bg-slate-900/70 border border-slate-800">
@@ -277,6 +247,36 @@ export function DashboardView({ data, loading, apiError, referralLink, onCopy, c
           </div>
         </div>
       )}
+
+      {/* Referral Link Section */}
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="p-4 rounded-xl bg-slate-900/70 border border-slate-800"
+      >
+        <h2 className="text-lg font-semibold text-turquoise mb-3">Your Referral Link</h2>
+        {referralLink ? (
+          <div className="flex items-center gap-2">
+            <input 
+              value={referralLink.url} 
+              readOnly 
+              className="flex-1 px-3 py-2 rounded bg-slate-700 border border-slate-600 text-sm" 
+            />
+            <button 
+              onClick={onCopy}
+              className="px-4 py-2 rounded bg-turquoise text-black font-semibold text-sm hover:bg-turquoise/90 transition-colors"
+            >
+              Copy
+            </button>
+            {copied && <span className="text-green-400 text-sm">Copied!</span>}
+          </div>
+        ) : (
+          <div className="text-sm text-gray-400">Loading referral link...</div>
+        )}
+        {referralLink && (
+          <p className="text-xs text-gray-500 mt-2">Referral Code: {referralLink.code}</p>
+        )}
+      </motion.div>
     </div>
   );
 }
