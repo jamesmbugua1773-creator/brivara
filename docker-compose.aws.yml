@@ -1,0 +1,81 @@
+version: '3.9'
+
+# AWS Free Tier oriented compose:
+# - Postgres runs on AWS RDS (set DATABASE_URL)
+# - Redis is optional (omit REDIS_URL if you don't have one)
+# - Backend + Nginx run on a small EC2 instance
+# - Frontend is typically hosted on Vercel (recommended) OR you can add the frontend service
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: brivara-backend
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 4000
+
+      # Must point to your RDS instance. Strongly recommended to require TLS:
+      # postgresql://user:pass@your-rds-endpoint:5432/brivara_db?sslmode=require
+      DATABASE_URL: ${DATABASE_URL}
+      DIRECT_URL: ${DIRECT_URL:-${DATABASE_URL}}
+
+      # Optional: only set if you have managed Redis (Upstash/ElastiCache/etc.)
+      # If omitted, the app falls back to in-memory rate limiting.
+      # REDIS_URL: ${REDIS_URL}
+
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
+
+      FRONTEND_URL: ${FRONTEND_URL}
+      API_URL: ${API_URL}
+      WEBSITE_URL: ${WEBSITE_URL}
+      CORS_ORIGINS: ${CORS_ORIGINS}
+
+      SMTP_HOST: ${SMTP_HOST}
+      SMTP_PORT: ${SMTP_PORT}
+      SMTP_SECURE: ${SMTP_SECURE:-true}
+      SMTP_USER: ${SMTP_USER}
+      SMTP_PASS: ${SMTP_PASS}
+      EMAIL_FROM: ${EMAIL_FROM}
+
+      # Security / ops
+      TRUST_PROXY: ${TRUST_PROXY:-true}
+
+      # Payments / blockchain / withdrawals (configure explicitly)
+      TRANSACTION_AUTH_SECRET: ${TRANSACTION_AUTH_SECRET}
+      BSCSCAN_API_KEY: ${BSCSCAN_API_KEY}
+      WALLET_BEP20_ADDRESS: ${WALLET_BEP20_ADDRESS}
+      WALLET_TRC20_ADDRESS: ${WALLET_TRC20_ADDRESS}
+
+      WITHDRAWAL_PROCESS_ENABLED: ${WITHDRAWAL_PROCESS_ENABLED:-false}
+      WITHDRAWAL_PROVIDER_URL: ${WITHDRAWAL_PROVIDER_URL}
+      WITHDRAWAL_PROVIDER_SECRET: ${WITHDRAWAL_PROVIDER_SECRET}
+
+    ports:
+      # You can keep this internal-only behind Nginx by removing this port mapping.
+      - "4001:4000"
+
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:4000/api/health', (r) => process.exit(r.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1))"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 40s
+
+    command: sh -c "npx prisma migrate deploy && node dist/server.js"
+
+  nginx:
+    image: nginx:alpine
+    container_name: brivara-nginx
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.aws.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro

@@ -51,7 +51,7 @@ router.get('/progress', authMiddleware, async (req: Request, res: Response) => {
 
   // Direct referrals
   const directs = await prisma.user.findMany({ where: { sponsorId: userId }, select: { id: true } });
-  const directIds = directs.map((d) => d.id);
+  const directIds = directs.map((d: { id: string }) => d.id);
 
   let directCount100 = 0;
   let directCount500 = 0;
@@ -70,12 +70,12 @@ router.get('/progress', authMiddleware, async (req: Request, res: Response) => {
     }
 
     const directAwards = await prisma.awardLedger.findMany({ where: { userId: { in: directIds } }, select: { awardName: true } });
-    for (const a of directAwards) directRanks.add(a.awardName);
+    for (const a of directAwards as Array<{ awardName: string }>) directRanks.add(a.awardName);
   }
 
   // Achieved ranks for current user
   const myAwards = await prisma.awardLedger.findMany({ where: { userId }, select: { awardName: true } });
-  const achieved = myAwards.map((a) => a.awardName);
+  const achieved = (myAwards as Array<{ awardName: string }>).map((a) => a.awardName);
 
   res.json({
     teamPoints,

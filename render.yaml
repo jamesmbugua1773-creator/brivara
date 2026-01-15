@@ -1,0 +1,51 @@
+services:
+  - type: web
+    name: brivara-backend
+    env: node
+    rootDir: backend
+    plan: starter
+    buildCommand: npm ci && npx prisma generate && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      # Render injects PORT automatically.
+      # Required DB vars (Supabase):
+      - key: DATABASE_URL
+        sync: false
+      - key: DIRECT_URL
+        sync: false
+      # Required auth/security
+      - key: JWT_SECRET
+        sync: false
+      - key: TRANSACTION_AUTH_SECRET
+        sync: false
+      - key: TRUST_PROXY
+        value: "true"
+      # CORS / URLs
+      - key: FRONTEND_URL
+        sync: false
+      - key: API_URL
+        sync: false
+      - key: WEBSITE_URL
+        sync: false
+      - key: CORS_ORIGINS
+        sync: false
+      # Email (set if you use password reset)
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_PORT
+        sync: false
+      - key: SMTP_SECURE
+        sync: false
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASS
+        sync: false
+      - key: EMAIL_FROM
+        sync: false
+      # Optional Redis for rate limiting
+      - key: REDIS_URL
+        sync: false

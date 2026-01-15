@@ -17,13 +17,13 @@ router.get('/tree', authMiddleware, async (req, res) => {
         where: { sponsorId: uid }, 
         select: { id: true, username: true, phone: true } 
       });
-      levelUsers.push(...refs.map(r => ({ 
+      levelUsers.push(...(refs as Array<{ id: string; username: string; phone: string | null }>).map((r) => ({ 
         id: r.id, 
         username: r.username, 
         phone: r.phone || undefined,
         type: lvl === 1 ? 'direct' : 'indirect' as 'direct' | 'indirect'
       })));
-      next.push(...refs.map(r => r.id));
+      next.push(...(refs as Array<{ id: string }>).map((r) => r.id));
     }
     levels.push({ level: lvl, users: levelUsers });
     currentLevel = next;
@@ -118,7 +118,7 @@ router.get('/analytics', authMiddleware, async (req, res) => {
         if (!pkgByUser.has(a.userId)) pkgByUser.set(a.userId, { packageName: a.packageName, amount: Number(a.amount) });
       }
     }
-    const usernameById = new Map(users.map(u => [u.id, u.username]));
+    const usernameById = new Map((users as Array<{ id: string; username: string }>).map((u) => [u.id, u.username]));
 
     const rows = sourceIds.map(id => ({
       sourceUserId: id,

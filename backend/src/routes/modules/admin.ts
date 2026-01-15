@@ -131,4 +131,88 @@ router.post('/tickets/:id/reply', authMiddleware, adminMiddleware, async (req, r
   } catch (e: any) { res.status(400).json({ error: e.message }); }
 });
 
+// Points ledger for user
+router.get('/points', authMiddleware, adminMiddleware, async (req, res) => {
+  const { userId } = req.query as { userId: string };
+  const points = await prisma.pointsLedger.findMany({ where: { userId }, orderBy: { timestamp: 'desc' } });
+  res.json(points);
+});
+router.post('/points', authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const point = await prisma.pointsLedger.create({ data: req.body });
+    res.json(point);
+  } catch (e: any) {
+    res.status(400).json({ error: e.message });
+  }
+});
+router.delete('/points/:id', authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    await prisma.pointsLedger.delete({ where: { id: req.params.id } });
+    res.json({ success: true });
+  } catch (e: any) {
+    res.status(400).json({ error: e.message });
+  }
+});
+
+// Rebates ledger for user
+router.get('/rebates', authMiddleware, adminMiddleware, async (req, res) => {
+  const { userId } = req.query as { userId: string };
+  const rebates = await prisma.rebateLedger.findMany({ where: { userId }, orderBy: { timestamp: 'desc' } });
+  res.json(rebates);
+});
+router.post('/rebates', authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const rebate = await prisma.rebateLedger.create({ data: req.body });
+    res.json(rebate);
+  } catch (e: any) {
+    res.status(400).json({ error: e.message });
+  }
+});
+router.delete('/rebates/:id', authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    await prisma.rebateLedger.delete({ where: { id: req.params.id } });
+    res.json({ success: true });
+  } catch (e: any) {
+    res.status(400).json({ error: e.message });
+  }
+});
+
+// Packages for user
+router.get('/packages', authMiddleware, adminMiddleware, async (req, res) => {
+  const { userId } = req.query as { userId: string };
+  const packages = await prisma.packageActivation.findMany({ where: { userId }, orderBy: { activatedAt: 'desc' } });
+  res.json(packages);
+});
+
+// Awards for user
+router.get('/awards', authMiddleware, adminMiddleware, async (req, res) => {
+  const { userId } = req.query as { userId: string };
+  const awards = await prisma.awardLedger.findMany({ where: { userId }, orderBy: { timestamp: 'desc' } });
+  res.json(awards);
+});
+
+// Backwards-compatible alias used by frontend (admin user detail awards section)
+router.get('/awards/history', authMiddleware, adminMiddleware, async (req, res) => {
+  const { userId } = req.query as { userId?: string };
+  if (!userId) return res.status(400).json({ error: 'userId is required' });
+  const awards = await prisma.awardLedger.findMany({ where: { userId }, orderBy: { timestamp: 'desc' } });
+  res.json(awards);
+});
+router.post('/awards', authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const award = await prisma.awardLedger.create({ data: req.body });
+    res.json(award);
+  } catch (e: any) {
+    res.status(400).json({ error: e.message });
+  }
+});
+router.delete('/awards/:id', authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    await prisma.awardLedger.delete({ where: { id: req.params.id } });
+    res.json({ success: true });
+  } catch (e: any) {
+    res.status(400).json({ error: e.message });
+  }
+});
+
 export default router;

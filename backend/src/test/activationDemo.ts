@@ -1,6 +1,5 @@
-import 'dotenv/config';
-import { prisma } from '../services/db';
-import { activatePackage } from '../engines/activation';
+import { prisma } from '../services/db.js';
+import { activatePackage } from '../engines/activation.js';
 
 async function showTotals(label: string, userId: string) {
   const roi = await prisma.rOILedger.aggregate({ _sum: { amount: true }, where: { userId } });
@@ -13,7 +12,7 @@ async function showTotals(label: string, userId: string) {
   });
   const bonusRows = await prisma.bonusLedger.findMany({ where: { userId }, orderBy: { timestamp: 'asc' } });
   if (bonusRows.length) {
-    console.table(bonusRows.map(b => ({ level: b.level, type: b.type, amount: Number(b.amount) })));
+    console.table((bonusRows as Array<{ level: number; type: string | null; amount: unknown }>).map((b) => ({ level: b.level, type: b.type, amount: Number(b.amount) })));
   }
 }
 

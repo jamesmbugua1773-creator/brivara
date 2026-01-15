@@ -1,12 +1,22 @@
 import cron from 'node-cron';
-import { prisma } from '../services/db';
+import { prisma } from '../services/db.js';
 import { v4 as uuidv4 } from 'uuid';
+import type { Prisma } from '@prisma/client';
+
+let isProcessing = false; // Prevent concurrent execution
 
 export function scheduleDailyROI() {
   // Run every day at 00:15
   cron.schedule('15 0 * * *', async () => {
-    const users = await prisma.user.findMany({ where: { status: 'Active' } });
-    for (const user of users) {
+    if (isProcessing) {
+      console.log('ROI processing already in progress, skipping...');
+      return;
+    }
+
+    isProcessing = true;
+    try {
+      const users = await prisma.user.findMany({ where: { status: 'Active' } });
+      for (const user of users) {
       const pkg = await prisma.packageActivation.findFirst({ where: { userId: user.id, cycleStatus: 'Active' }, orderBy: { activatedAt: 'desc' } });
       if (!pkg) continue;
       const since = Date.now() - new Date(pkg.activatedAt).getTime();
@@ -15,7 +25,7 @@ export function scheduleDailyROI() {
       const roiAmount = Number(pkg.amount) * 0.015; // 1.5%
       const txId = uuidv4();
 
-      await prisma.$transaction(async (tx) => {
+      await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
         // Stop if cycle complete
         const roiAgg = await tx.rOILedger.aggregate({ _sum: { amount: true }, where: { userId: user.id } });
         const bonusAgg = await tx.bonusLedger.aggregate({ _sum: { amount: true }, where: { userId: user.id } });
@@ -31,6 +41,11 @@ export function scheduleDailyROI() {
           update: { balance: { increment: roiAmount } },
         });
       });
+    }
+    } catch (error) {
+      console.error('ROI scheduler error:', error);
+    } finally {
+      isProcessing = false;
     }
   });
 }

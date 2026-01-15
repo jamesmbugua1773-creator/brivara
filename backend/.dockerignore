@@ -1,0 +1,15 @@
+# .dockerignore - Backend
+node_modules
+npm-debug.log
+dist
+.env
+.env.local
+.env.*.local
+.git
+.gitignore
+README.md
+.vscode
+.DS_Store
+*.db
+.next
+coverage

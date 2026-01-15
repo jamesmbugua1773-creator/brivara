@@ -1,16 +1,18 @@
 generator client {
   provider = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
 }
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model User {
   id            String   @id @default(cuid())
   email         String   @unique
-  username      String
+  username      String   @unique
   passwordHash  String
   referralCode  String   @unique
   sponsorId     String?  
@@ -45,8 +47,15 @@ model User {
   awards        AwardLedger[]
   withdrawals   Withdrawal[]
   deposits      Deposit[]
+  fundings      Funding[]
   tickets       SupportTicket[]
   depositAddresses UserDepositAddress[]
+
+  @@index([email])
+  @@index([referralCode])
+  @@index([sponsorId])
+  @@index([status])
+  @@index([created_at])
 }
 
 // Note: SQLite connector lacks enum support; using string role
@@ -60,6 +69,9 @@ model PackageActivation {
   activatedAt  DateTime @default(now())
   cycleCap     Float // 300% of amount
   cycleStatus  String   @default("Active")
+
+  @@index([userId, cycleStatus])
+  @@index([activatedAt])
 }
 
 model Wallet {
@@ -135,9 +147,27 @@ model Deposit {
   amount    Float
   fee       Float    @default(0)
   network   String   // SYSTEM, TRC20 or BEP20
+
+  @@index([userId, status])
+  @@index([status, timestamp])
+  @@index([txId])
+  @@index([network])
   txId      String   @unique
   timestamp DateTime @default(now())
   status    String   @default("Pending")
+}
+
+model Funding {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id])
+  amount        Float    // Loan amount provided
+  totalEarned   Float    @default(0) // Total earnings from funded amount
+  requiredReturn Float   // 3x the funded amount
+  status        String   @default("Active") // Active, Repaid, Defaulted
+  fundedAt      DateTime @default(now())
+  repaidAt      DateTime?
+  txId          String   @unique
 }
 
 model Withdrawal {
@@ -146,8 +176,12 @@ model Withdrawal {
   user      User     @relation(fields: [userId], references: [id])
   amount    Float
   fee       Float
+
+  @@index([userId, status])
+  @@index([status, timestamp])
+  @@index([txId])
   network   String   // BEP20 only
-  source    String   @default("REBATE") // REBATE | REFERRAL | AWARDS
+  source    String   @default("REBATE") // REBATE | REFERRAL | AWARDS | FUNDING
   txId      String   @unique
   timestamp DateTime @default(now())
   status    String   @default("Pending")

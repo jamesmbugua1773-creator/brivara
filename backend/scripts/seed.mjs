@@ -21,7 +21,7 @@ async function run() {
   const U1 = await prisma.user.create({ data: { email: 'u1@example.com', username: 'U1', passwordHash: pass, referralCode: 'u1code' } });
   const U2 = await prisma.user.create({ data: { email: 'u2@example.com', username: 'U2', passwordHash: pass, referralCode: 'u2code', sponsorId: U1.id } });
   const U3 = await prisma.user.create({ data: { email: 'u3@example.com', username: 'U3', passwordHash: pass, referralCode: 'u3code', sponsorId: U2.id } });
-  const U4 = await prisma.user.create({ data: { email: 'u4@example.com', username: 'U4', passwordHash: pass, referralCode: 'u4code', sponsorId: U3.id } });
+  const U4 = await prisma.user.create({ data: { email: 'u4@example.com', username: 'U4', passwordHash: pass, referralCode: 'u4code', sponsorId: U3.id, role: 'ADMIN' } });
   // Add downlines for U4 to test referral earnings
   const U5 = await prisma.user.create({ data: { email: 'u5@example.com', username: 'U5', passwordHash: pass, referralCode: 'u5code', sponsorId: U4.id } });
   const U6 = await prisma.user.create({ data: { email: 'u6@example.com', username: 'U6', passwordHash: pass, referralCode: 'u6code', sponsorId: U5.id } });

@@ -10,6 +10,7 @@ import awards from './modules/awards.js';
 import profile from './modules/profile.js';
 import admin from './modules/admin.js';
 import support from './modules/support.js';
+import funding from './modules/funding.js';
 
 const router = Router();
 
@@ -26,6 +27,7 @@ router.use('/packages', packages);
 router.use('/progress', progress);
 router.use('/awards', awards);
 router.use('/profile', profile);
+router.use('/funding', funding);
 router.use('/admin', admin);
 router.use('/support', support);
 

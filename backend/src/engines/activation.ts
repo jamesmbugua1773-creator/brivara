@@ -1,4 +1,4 @@
-import { prisma } from '../services/db';
+import { prisma } from '../services/db.js';
 import type { Prisma } from '@prisma/client';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -10,7 +10,7 @@ export async function activatePackage(userId: string, packageName: keyof typeof 
   const amount = PACKAGE_MAP[packageName];
   if (!amount) throw new Error('Invalid package');
 
-  return await prisma.$transaction(async (tx) => {
+  return await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
     // Require sufficient wallet balance and deduct the package amount
     const wallet = await tx.wallet.findFirst({ where: { userId } });
     const balance = Number(wallet?.balance ?? 0);
